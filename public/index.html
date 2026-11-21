@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShortLink — Enterprise URL Shortener & Analytics</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">ShortLink <span class="badge">Pro</span></span>
+      </div>
+      <div class="nav-meta">
+        <span class="status-indicator">● REST API Active</span>
+        <span class="author-tag">Project 2 • Java Spring Boot</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    
+    <!-- Hero / Shortener Input Card -->
+    <section class="shortener-hero">
+      <h1>Shorten Any Long Link in Seconds</h1>
+      <p>Transform long URLs into powerful, trackable short links with detailed analytics & QR codes.</p>
+
+      <form id="shortenForm" class="shortener-box" onsubmit="handleShorten(event)">
+        <div class="form-row main-input-row">
+          <input type="text" id="originalUrl" placeholder="Paste your long URL here (e.g. https://github.com/...)" required autocomplete="off">
+          <button type="submit" id="shortenBtn" class="primary-btn">Shorten URL 🚀</button>
+        </div>
+
+        <!-- Advanced optional fields -->
+        <div class="form-row-accordion">
+          <div class="input-col">
+            <label>Custom Alias (Optional)</label>
+            <div class="prefix-input">
+              <span class="prefix">localhost:8081/</span>
+              <input type="text" id="customAlias" placeholder="my-custom-name" maxlength="30">
+            </div>
+          </div>
+          <div class="input-col">
+            <label>Link Title (Optional)</label>
+            <input type="text" id="linkTitle" placeholder="e.g. My Portfolio Project">
+          </div>
+        </div>
+
+        <div id="alertMsg" class="alert-box" style="display:none;"></div>
+      </form>
+    </section>
+
+    <!-- Global Stats Overview -->
+    <section class="stats-overview">
+      <div class="stat-card">
+        <div class="stat-icon purple">🔗</div>
+        <div class="stat-meta">
+          <span class="stat-label">Total Short Links</span>
+          <h2 id="totalLinksCount">0</h2>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">📈</div>
+        <div class="stat-meta">
+          <span class="stat-label">Total Link Clicks</span>
+          <h2 id="totalClicksCount">0</h2>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">⚡</div>
+        <div class="stat-meta">
+          <span class="stat-label">Average CTR</span>
+          <h2 id="avgClicksCount">0.0</h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- Shortened Links Management & Analytics Table -->
+    <section class="links-section">
+      <div class="section-header">
+        <div>
+          <h2>Your Shortened Links & Analytics</h2>
+          <p>Real-time click tracking, visitor insights, and redirection.</p>
+        </div>
+        <button class="refresh-btn" onclick="loadUrls()">🔄 Refresh</button>
+      </div>
+
+      <div class="table-container">
+        <table class="links-table">
+          <thead>
+            <tr>
+              <th>Title & Destination</th>
+              <th>Short Link</th>
+              <th>Total Clicks</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="linksTableBody">
+            <!-- Populated dynamically by app.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= Analytics Modal ================= -->
+  <div id="analyticsModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <div>
+          <h3 id="modalLinkTitle">Link Analytics</h3>
+          <span id="modalShortUrl" class="modal-sub">http://localhost:8081/...</span>
+        </div>
+        <button class="close-btn" onclick="closeAnalyticsModal()">✕</button>
+      </div>
+
+      <div class="analytics-grid">
+        <!-- Browsers Breakdown -->
+        <div class="analytics-card">
+          <h4>🌐 Top Browsers</h4>
+          <div id="browserBreakdown" class="breakdown-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Operating Systems Breakdown -->
+        <div class="analytics-card">
+          <h4>💻 Operating Systems</h4>
+          <div id="osBreakdown" class="breakdown-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Referrers Breakdown -->
+        <div class="analytics-card">
+          <h4>🎯 Referrer Sources</h4>
+          <div id="refBreakdown" class="breakdown-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Visits Log -->
+      <div class="recent-logs-section">
+        <h4>🕒 Recent Visit Log (Audit Trail)</h4>
+        <div class="log-table-wrap">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Browser</th>
+                <th>Platform</th>
+                <th>Referrer</th>
+                <th>Location</th>
+              </tr>
+            </thead>
+            <tbody id="recentVisitsBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= QR Code Modal ================= -->
+  <div id="qrModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card small text-center">
+      <div class="modal-header">
+        <h3>Link QR Code</h3>
+        <button class="close-btn" onclick="closeQrModal()">✕</button>
+      </div>
+      <p id="qrLinkText" class="modal-sub"></p>
+      <div class="qr-preview-box">
+        <img id="qrImage" src="" alt="QR Code">
+      </div>
+      <button class="primary-btn" onclick="downloadQr()">Download QR Code</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
